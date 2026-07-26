@@ -23,6 +23,9 @@
 # all, doc, install, install-cross, install-cross-rest, install-strip,
 # uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean.
 
+my_coverage.o: sancov/my_coverage.c
+	$(CC) $(ALL_CFLAGS) -fsanitize-coverage=0 -c $< -o $@
+
 # This is the default target.
 # Set by autoconf to "all.internal" for a native build, or
 # "all.cross" to build a cross compiler.
@@ -1118,6 +1121,14 @@ ALL_CXXFLAGS = $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
   $(COVERAGE_FLAGS) $(ALIASING_FLAGS) $(NOEXCEPTION_FLAGS) \
   $(WARN_CXXFLAGS) @DEFS@
 
+ALL_CFLAGS += -g3
+ALL_CFLAGS += -O1
+ALL_CFLAGS += -fsanitize-coverage=trace-pc-guard,pc-table
+
+ALL_CXXFLAGS += -g3
+ALL_CXXFLAGS += -O1
+ALL_CXXFLAGS += -fsanitize-coverage=trace-pc-guard,pc-table
+
 # Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
 # puts -I options in CPPFLAGS, our include files in the srcdir will always
 # win against random include files in /usr/include.
@@ -1873,6 +1884,7 @@ OBJS = \
 	$(EXTRA_OBJS) \
 	$(host_hook_obj)
 
+
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = \
@@ -1974,7 +1986,7 @@ endif
 EXTRA_BACKEND_OBJS = simple-diagnostic-path.o diagnostics/lazy-paths.o
 
 BACKEND = $(EXTRA_BACKEND_OBJS) libbackend.a main.o libcommon-target.a \
-	libcommon.a $(CPPLIB) $(LIBDECNUMBER)
+	libcommon.a $(CPPLIB) $(LIBDECNUMBER) my_coverage.o
 
 # This is defined to "yes" if Tree checking is enabled, which roughly means
 # front-end checking.
@@ -3192,7 +3204,7 @@ ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))
 $(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h gtype.state: s-gtype ; @true
 
 ### Common flags to gengtype [e.g. -v or -B backupdir]
-GENGTYPE_FLAGS= 
+GENGTYPE_FLAGS=
 
 gtyp-input.list: s-gtyp-input ; @true
 s-gtyp-input: Makefile
